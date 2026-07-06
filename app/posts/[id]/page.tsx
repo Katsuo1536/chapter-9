@@ -5,26 +5,34 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "../../_utils/time";
-import type { Post } from '../../_types/post';
+import { MicroCmsPost } from "@/app/_types/MicroCmsPost";
 
 export default function Article() {
 
   const { id } = useParams<string>();
 
-  const [post, setPost] = useState<Post | null>(null);
+  // const [post, setPost] = useState<Post | null>(null);
+  const [post, setPost] = useState<MicroCmsPost | null>(null);
   const [load, setLoad] = useState<boolean>(true);
 
   useEffect(() => {
     const fetcher = async () => {
-      const res: Response = await fetch(`https://1hmfpsvto6.execute-api.ap-northeast-1.amazonaws.com/dev/posts/${(id)}`)
+      setLoad(true)
+      const res = await fetch(
+        `https://27ycqhtq1v.microcms.io/api/v1/posts/${id}`,
+        {
+          headers: {
+            'X-MICROCMS-API-KEY': process.env.NEXT_PUBLIC_MICROCMS_API_KEY as string,
+          },
+        },
+      )
       const data = await res.json()
-      setPost(data.post)
-      setLoad(!load)
+      setPost(data) // dataをそのままセット
+      setLoad(false)
     }
 
-
     fetcher()
-  }, [])
+  }, [id])
 
 
   if (load) {
@@ -46,7 +54,7 @@ export default function Article() {
             <main className="mx-auto max-w-3xl px-4 mt-3">
               <div>
                 <Image className="items-center"
-                  src={post.thumbnailUrl}
+                  src={post.thumbnail.url}
                   alt="post.thumbnailUrlの画像"
                   width={800}
                   height={400} /><br />
@@ -58,7 +66,7 @@ export default function Article() {
 
 
                 <span>{post.categories?.map(category => (
-                  <span className="bg-gray-200 text-black rounded-2xl p-1" >{category}</span>
+                  <span className="bg-gray-200 text-black rounded-2xl p-1" >{category.name}</span>
                 ))}
                 </span>
 

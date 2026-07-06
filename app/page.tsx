@@ -4,19 +4,23 @@ import { Fragment, useState, useEffect } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "./_utils/time";
-import type { Post } from './_types/post';
+import type { MicroCmsPost } from "./_types/MicroCmsPost";
 
 
 export default function Home() {
 
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<MicroCmsPost[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
   useEffect(() => {
     const fetcher = async () => {
-      const res = await fetch("https://1hmfpsvto6.execute-api.ap-northeast-1.amazonaws.com/dev/posts")
-      const data = await res.json()
-      setPosts(data.posts)
+      const res = await fetch('https://27ycqhtq1v.microcms.io/api/v1/posts', {
+        headers: {
+          'X-MICROCMS-API-KEY': process.env.NEXT_PUBLIC_MICROCMS_API_KEY as string,
+        },
+      })
+      const { contents } = await res.json()
+      setPosts(contents)
       setLoad(!load)
     }
 
@@ -39,17 +43,17 @@ export default function Home() {
             <Link href={`posts/${elem.id}`}>
               <main className="flex justify-between mx-auto container items-center">
                 <div >
-                  <Image src={elem.thumbnailUrl}
+                  <Image src={elem.thumbnail.url}
                     alt="elem.thumbnailUrlの画像"
-                    width={800}
-                    height={400} />
+                    width={elem.thumbnail.width}
+                    height={elem.thumbnail.height} />
                 </div>
 
                 <div className="text-left items-center">
                   <time dateTime={elem.createdAt}>{time(new Date(elem.createdAt))}</time>
                   <>{console.log(elem.categories)}</>
                   <span>{elem.categories.map(category => (
-                    <span className="bg-gray-200 text-black rounded-2xl p-1" key={elem.id}>{category}</span>
+                    <span className="bg-gray-200 text-black rounded-2xl p-1" key={elem.id}>{category.name}</span>
                   ))}
                   </span>
 
