@@ -6,25 +6,34 @@ import Image from 'next/image';
 import { time } from "../../_utils/time";
 import type { AdminPost } from "@/app/_types/AdminPost";
 import { Sideber } from "@/app/_components/Sideber";
+import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
 
 
-export default function Posts() {
+export default function ShowPost() {
 
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetcher = async () => {
-      const res = await fetch('/api/admin/posts', {
-      })
-      const { posts } = await res.json()
-      setPosts(posts)
-      console.log(posts)
-      setLoad(!load)
-    }
 
-    fetcher()
-  }, [])
+  try {
+    useEffect(() => {
+      const fetcher = async () => {
+        const res = await fetch('/api/admin/posts', {
+        })
+        const { posts }: CategoriesIndexResponse = await res.json()
+        setPosts(posts)
+        console.log(posts)
+        setLoad(!load)
+      }
+
+      fetcher()
+    }, [])
+
+  }
+  catch (error) {
+    console.log(error)
+    alert('投稿の取得に失敗しました。')
+  }
 
   if (load) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
@@ -49,10 +58,10 @@ export default function Posts() {
           posts.map(elem => (
             <Fragment key={elem.id} >
               <Link href={`posts/${elem.id}`}>
-              <div className="text-left items-center ml-10">
-                <h6 className="text-2xl font-bold">{elem.title}</h6>
-                <time className="text-gray-500" dateTime={elem.createdAt}>{time(new Date(elem.createdAt))}</time>
-              </div>
+                <div className="text-left items-center ml-10">
+                  <h6 className="text-2xl font-bold">{elem.title}</h6>
+                  <time className="text-gray-500" dateTime={elem.createdAt}>{time(new Date(elem.createdAt))}</time>
+                </div>
               </Link>
 
               <hr className="m-3" />

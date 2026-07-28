@@ -7,26 +7,34 @@ import { time } from "../../_utils/time";
 import type { AdminPost } from "@/app/_types/AdminPost";
 import { Sideber } from "@/app/_components/Sideber";
 import { AdminCategory } from "@/app/_types/AdminCategory";
+import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
 
 
-export default function Categories() {
+export default function ShowCategories() {
 
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
 
-  useEffect(() => {
-    const fetcher = async () => {
-      const res = await fetch('/api/admin/categories', {
-      })
-      const { categories } = await res.json()
-      setCategories(categories)
-      console.log(categories)
-      setLoad(!load)
-    }
+  try {
+    useEffect(() => {
+      const fetcher = async () => {
+        const res: Response = await fetch('/api/admin/categories', {
+        })
+        const { categories }: CategoriesIndexResponse = await res.json()
+        setCategories(categories)
+        console.log(categories)
+        setLoad(!load)
+      }
 
-    fetcher()
-  }, [])
+      fetcher()
+    }, [])
+    
+  }
+  catch (error) {
+    console.log(error)
+    alert('カテゴリーの取得に失敗しました。')
+  }
 
   if (load) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
@@ -52,9 +60,9 @@ export default function Categories() {
           categories.map(elem => (
             <Fragment key={elem.id} >
               <Link href={`categories/${elem.id}`}>
-              <div className="text-left items-center ml-10">
-                <h6 className="text-2xl font-bold">{elem.name}</h6>
-              </div>
+                <div className="text-left items-center ml-10">
+                  <h6 className="text-2xl font-bold">{elem.name}</h6>
+                </div>
               </Link>
 
               <hr className="m-3" />

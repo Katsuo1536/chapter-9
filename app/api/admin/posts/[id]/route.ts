@@ -19,7 +19,7 @@ export type PostResponse = {
   }
 }
 
-export type PostOfType = {
+export type UpdateOfType = {
   title: string
   content: string
   thumbnailURL: string
@@ -66,7 +66,7 @@ export const GET = async (_request: NextRequest,
 export const PUT = async (request: NextRequest,
   { params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params;
-  const req: PostOfType = await request.json();
+  const req: UpdateOfType = await request.json();
 
   try {
     const post = await prisma.post.update({

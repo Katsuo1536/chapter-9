@@ -7,19 +7,11 @@ export type CategoryShowResponse = {
     name: string
     createdAt: Date
     updatedAt: Date
-    posts: {
-      post: {
-        id: number,
-      }
-    }[]
-  }
+  }[]
 }
 
-type CategoryRequest = {
-  id: number
+export type CategoryRequest = {
   name: string
-  createdAt: Date
-  updatedAt: Date
 }
 
 export const GET = async (_request: NextRequest,

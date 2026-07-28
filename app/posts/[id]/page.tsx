@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "../../_utils/time";
 import { AdminPost } from "@/app/_types/AdminPost";
-import { AdminCategory } from "@/app/_types/AdminCategory";
+import { PostResponse } from "@/app/api/posts/[id]/route";
 
 
 export default function Article() {
@@ -15,23 +15,28 @@ export default function Article() {
 
   // const [post, setPost] = useState<Post | null>(null);
   const [post, setPost] = useState<AdminPost | null>(null);
-  const [category, setCategory] = useState<AdminCategory>();
   const [load, setLoad] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetcher = async () => {
-      setLoad(true)
-      const res = await fetch(
-        `/api/posts/${id}`, {
-      })
-      const { post } = await res.json()
-      setPost(post)
-      console.log(post)
-      setLoad(false)
-    }
+  try {
+    useEffect(() => {
+      const fetcher = async () => {
+        setLoad(true)
+        const res = await fetch(
+          `/api/posts/${id}`, {
+        })
+        const { post }: PostResponse = await res.json()
+        setPost(post)
+        console.log(post)
+        setLoad(false)
+      }
 
-    fetcher()
-  }, [id])
+      fetcher()
+    }, [id])
+  }
+  catch (error) {
+    console.log(error)
+    alert('投稿の取得に失敗しました。')
+  }
 
 
   if (load) {

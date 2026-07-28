@@ -15,11 +15,8 @@ export type CategoriesIndexResponse = {
   }[]
 }
 
-type PostCategoryRequest = {
-  id: number
+export type PostCategoryRequest = {
   name: string
-  createdAt: Date
-  updatedAt: Date
 }
 
 export const GET = async () => {

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "./_utils/time";
 import { AdminPost } from "./_types/AdminPost";
+import { PostsIndexResponse } from "./api/posts/route";
 
 
 export default function Home() {
@@ -12,18 +13,25 @@ export default function Home() {
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetcher = async () => {
-      const res = await fetch('/api/posts', {
-      })
-      const { posts } = await res.json()
-      console.log(posts)
-      setPosts(posts)
-      setLoad(!load)
-    }
+  try {
+    useEffect(() => {
+      const fetcher = async () => {
+        const res = await fetch('/api/posts', {
+        })
+        const { posts }: PostsIndexResponse = await res.json()
+        console.log(posts)
+        setPosts(posts)
+        setLoad(!load)
+      }
 
-    fetcher()
-  }, [])
+      fetcher()
+    }, [])
+
+  }
+  catch (error) {
+    console.log(error)
+    alert('カテゴリーの取得に失敗しました。')
+  }
 
   if (load) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
