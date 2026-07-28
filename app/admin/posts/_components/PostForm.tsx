@@ -37,24 +37,24 @@ export const PostForm = ({
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
-  try{
   useEffect(() => {
-    const fetcher = async () => {
-      const res: Response = await fetch('/api/admin/categories', {
-      })
-      const { categories }: CategoriesIndexResponse = await res.json()
-      setCategories(categories)
-      console.log(categories)
-      setLoad(!load)
+    try {
+      const fetcher = async () => {
+        const res: Response = await fetch('/api/admin/categories', {
+        })
+        const { categories }: CategoriesIndexResponse = await res.json()
+        setCategories(categories)
+        console.log(categories)
+        setLoad(!load)
+      }
+
+      fetcher()
+
+    } catch (error) {
+      console.log(error)
+      alert('カテゴリーの取得に失敗しました。')
     }
-
-    fetcher()
   }, [])
-
-  } catch (error) {
-    console.log(error)
-    alert('カテゴリーの取得に失敗しました。')
-  }
 
   const {
     register,
