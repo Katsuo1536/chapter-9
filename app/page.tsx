@@ -4,28 +4,34 @@ import { Fragment, useState, useEffect } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "./_utils/time";
-import type { MicroCmsPost } from "./_types/MicroCmsPost";
+import { AdminPost } from "./_types/AdminPost";
+import { PostsIndexResponse } from "./api/posts/route";
 
 
 export default function Home() {
 
-  const [posts, setPosts] = useState<MicroCmsPost[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
-  useEffect(() => {
-    const fetcher = async () => {
-      const res = await fetch('https://27ycqhtq1v.microcms.io/api/v1/posts', {
-        headers: {
-          'X-MICROCMS-API-KEY': process.env.NEXT_PUBLIC_MICROCMS_API_KEY as string,
-        },
-      })
-      const { contents } = await res.json()
-      setPosts(contents)
-      setLoad(!load)
-    }
+  try {
+    useEffect(() => {
+      const fetcher = async () => {
+        const res = await fetch('/api/posts', {
+        })
+        const { posts }: PostsIndexResponse = await res.json()
+        console.log(posts)
+        setPosts(posts)
+        setLoad(!load)
+      }
 
-    fetcher()
-  }, [])
+      fetcher()
+    }, [])
+
+  }
+  catch (error) {
+    console.log(error)
+    alert('カテゴリーの取得に失敗しました。')
+  }
 
   if (load) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
@@ -36,24 +42,27 @@ export default function Home() {
 
   return (
     <>
-      <span className="text-2xl justify-between text-left m-30">記事一覧</span>
+      <div className="m-10">
+        <span className="text-2xl justify-between text-left m-10 ">記事一覧</span>
+      </div>
+
       {
         posts.map(elem => (
           <Fragment key={elem.id} >
             <Link href={`posts/${elem.id}`}>
-              <main className="flex justify-between mx-auto container items-center">
-                <div >
+              <main className="flex justify-between mx-auto container items-center border border-gray-300 p-5 rounded-2xl">
+                {/* <div >
                   <Image src={elem.thumbnail.url}
                     alt="elem.thumbnailUrlの画像"
                     width={elem.thumbnail.width}
                     height={elem.thumbnail.height} />
-                </div>
+                </div> */}
 
                 <div className="text-left items-center">
                   <time dateTime={elem.createdAt}>{time(new Date(elem.createdAt))}</time>
-                  <>{console.log(elem.categories)}</>
-                  <span>{elem.categories.map(category => (
-                    <span className="bg-gray-200 text-black rounded-2xl p-1" key={elem.id}>{category.name}</span>
+                  <>{console.log(elem.postCategories)}</>
+                  <span>{elem.postCategories.map(category => (
+                    <span className="border border-blue-400 text-blue-400 rounded-2xl p-1" key={elem.id}>{category.category.name}</span>
                   ))}
                   </span>
 
@@ -63,10 +72,13 @@ export default function Home() {
               </main>
             </Link>
 
-            <hr className="m-3" />
+            <div className="m-5" />
 
           </Fragment>
+
         ))}
+
+      <div className="p-10"></div>
     </>
   );
 
