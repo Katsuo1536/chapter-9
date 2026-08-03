@@ -5,11 +5,13 @@ import { AdminCategory } from "@/app/_types/AdminCategory";
 import { useParams, useRouter } from 'next/navigation';
 import { CategoryRequest, CategoryShowResponse } from "@/app/api/admin/categories/[id]/route";
 import { CategoryForm, Data } from "../_components/CategoryForm";
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
 
 
 
 export default function CategoryEdit() {
 
+  const { token } = useSupabaseSession()
   const router = useRouter();
 
   const [category, setCategory] = useState<AdminCategory>();
@@ -18,10 +20,15 @@ export default function CategoryEdit() {
   const { id } = useParams<string>();
 
 
-  try {
-    useEffect(() => {
+  useEffect(() => {
+    if (!token) return
+    try {
       const fetcher = async () => {
         const res = await fetch(`/api/admin/categories/${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,
+          },
         })
         const { category }: CategoryShowResponse = await res.json()
         setCategory(category)
@@ -31,17 +38,17 @@ export default function CategoryEdit() {
 
       fetcher()
 
-    }, [id])
+    }
+    catch (error) {
+      console.log(error)
+      alert('カテゴリーの取得に失敗しました。')
+    }
+  }, [id, token])
 
-
-  }
-  catch (error) {
-    console.log(error)
-    alert('カテゴリーの取得に失敗しました。')
-  }
 
 
   const CategoryUpdate = async (data: Data) => {
+    if (!token) return
     try {
 
       const body: CategoryRequest = {
@@ -51,7 +58,8 @@ export default function CategoryEdit() {
       const res: Response = await fetch(`/api/admin/categories/${id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
         body: JSON.stringify(body)
       })
@@ -64,11 +72,13 @@ export default function CategoryEdit() {
   }
 
   const CategoryDelete = async () => {
+    if (!token) return
     try {
       const res: Response = await fetch(`/api/admin/categories/${id}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
       })
 

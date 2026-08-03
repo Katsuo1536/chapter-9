@@ -7,18 +7,26 @@ import { time } from "../../_utils/time";
 import type { AdminPost } from "@/app/_types/AdminPost";
 import { Sideber } from "@/app/_components/Sideber";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+
 
 
 export default function ShowPost() {
+  const { token } = useSupabaseSession()
 
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
 
-  try {
-    useEffect(() => {
+  useEffect(() => {
+    if (!token) return
+    try {
       const fetcher = async () => {
         const res = await fetch('/api/admin/posts', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,
+          },
         })
         const { posts }: CategoriesIndexResponse = await res.json()
         setPosts(posts)
@@ -27,13 +35,13 @@ export default function ShowPost() {
       }
 
       fetcher()
-    }, [])
+    } catch (error) {
+      console.log(error)
+      alert('投稿の取得に失敗しました。')
+    }
 
-  }
-  catch (error) {
-    console.log(error)
-    alert('投稿の取得に失敗しました。')
-  }
+  }, [token])
+
 
   if (load) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>

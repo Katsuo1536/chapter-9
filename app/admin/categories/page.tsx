@@ -8,18 +8,26 @@ import type { AdminPost } from "@/app/_types/AdminPost";
 import { Sideber } from "@/app/_components/Sideber";
 import { AdminCategory } from "@/app/_types/AdminCategory";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+
 
 
 export default function ShowCategories() {
 
+  const { token } = useSupabaseSession()
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
 
-  try {
-    useEffect(() => {
+  useEffect(() => {
+    if (!token) return
+    try {
       const fetcher = async () => {
         const res: Response = await fetch('/api/admin/categories', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,
+          },
         })
         const { categories }: CategoriesIndexResponse = await res.json()
         setCategories(categories)
@@ -28,13 +36,14 @@ export default function ShowCategories() {
       }
 
       fetcher()
-    }, [])
-    
-  }
-  catch (error) {
-    console.log(error)
-    alert('カテゴリーの取得に失敗しました。')
-  }
+    }
+    catch (error) {
+      console.log(error)
+      alert('カテゴリーの取得に失敗しました。')
+    }
+  }, [token])
+
+
 
   if (load) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>

@@ -1,5 +1,6 @@
 import { prisma } from "@/app/_libs/prisma";
 import { NextResponse, NextRequest } from "next/server";
+import { supabase } from "@/app/_libs/supabase";
 
 export type CategoriesIndexResponse = {
   categories: {
@@ -19,7 +20,15 @@ export type PostCategoryRequest = {
   name: string
 }
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
+
+  const token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
   try {
     const categories = await prisma.category.findMany({
       include: {
@@ -47,6 +56,14 @@ export const GET = async () => {
 }
 
 export const POST = async (request: NextRequest) => {
+
+  const token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 });
+
   const req: PostCategoryRequest = await request.json();
 
   try {
@@ -56,7 +73,6 @@ export const POST = async (request: NextRequest) => {
       }
     })
 
-    //  下のコードの型が何になるのか。
     return NextResponse.json({ categories }, { status: 200 })
   } catch (error) {
     if (error instanceof Error)

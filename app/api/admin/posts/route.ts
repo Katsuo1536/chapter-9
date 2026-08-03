@@ -1,5 +1,6 @@
 import { prisma } from "@/app/_libs/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/app/_libs/supabase";
 
 
 export type PostsIndexResponse = {
@@ -7,7 +8,7 @@ export type PostsIndexResponse = {
     id: number
     title: string
     content: string
-    thumbnailURL: string
+    thumbnailImageKey: string
     createdAt: Date
     updatedAt: Date
     postCategories: {
@@ -22,11 +23,19 @@ export type PostsIndexResponse = {
 export type PostOfType = {
   title: string
   content: string
-  thumbnailURL: string
+  thumbnailImageKey: string
   categories: number[]
 }
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
+
+  const token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
   try {
     const posts = await prisma.post.findMany({
       include: {
@@ -55,6 +64,16 @@ export const GET = async () => {
 
 
 export const POST = async (request: NextRequest) => {
+
+  const token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
+
+
   const req: PostOfType = await request.json();
   console.log(req)
   try {
@@ -62,7 +81,7 @@ export const POST = async (request: NextRequest) => {
       data: {
         title: req.title,
         content: req.content,
-        thumbnailURL: req.thumbnailUrl
+        thumbnailImageKey: req.thumbnailImageKey
       },
 
     })

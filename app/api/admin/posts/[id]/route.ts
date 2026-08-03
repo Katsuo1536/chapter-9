@@ -1,5 +1,6 @@
 import { prisma } from "@/app/_libs/prisma";
 import { NextResponse, NextRequest } from "next/server";
+import { supabase } from "@/app/_libs/supabase";
 
 
 export type PostResponse = {
@@ -7,7 +8,7 @@ export type PostResponse = {
     id: number
     title: string
     content: string
-    thumbnailURL: string
+    thumbnailImageKey: string
     createdAt: Date
     updatedAt: Date
     postCategories: {
@@ -22,12 +23,21 @@ export type PostResponse = {
 export type UpdateOfType = {
   title: string
   content: string
-  thumbnailURL: string
+  thumbnailImageKey: string
   categories: number[]
 }
 
 export const GET = async (_request: NextRequest,
   { params }: { params: Promise<{ id: string }> }) => {
+
+
+  const token = _request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
   const { id } = await params;
 
   try {
@@ -65,6 +75,14 @@ export const GET = async (_request: NextRequest,
 
 export const PUT = async (request: NextRequest,
   { params }: { params: Promise<{ id: string }> }) => {
+
+  const token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
   const { id } = await params;
   const req: UpdateOfType = await request.json();
 
@@ -74,7 +92,7 @@ export const PUT = async (request: NextRequest,
       data: {
         title: req.title,
         content: req.content,
-        thumbnailURL: req.thumbnailUrl,
+        thumbnailImageKey: req.thumbnailImageKey,
       },
     })
 
@@ -91,6 +109,8 @@ export const PUT = async (request: NextRequest,
       })
     }
 
+    console.log(post)
+
     return NextResponse.json({ post }, { status: 200 })
   } catch (error) {
     if (error instanceof Error)
@@ -100,6 +120,14 @@ export const PUT = async (request: NextRequest,
 
 export const DELETE = async (_request: NextRequest,
   { params }: { params: Promise<{ id: string }> }) => {
+
+  const token = _request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
 
   const { id } = await params;
 

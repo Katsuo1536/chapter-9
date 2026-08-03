@@ -3,12 +3,16 @@ import { Fragment, useState, useEffect } from "react";
 import { Sideber } from "@/app/_components/Sideber";
 import type { AdminPost } from "@/app/_types/AdminPost";
 import { useParams, useRouter } from 'next/navigation';
-import { PostResponse, UpdateOfType } from "@/app/api/posts/[id]/route";
+import { PostResponse } from "@/app/api/posts/[id]/route";
 import { PostForm, Data } from "../_components/PostForm";
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+import { UpdateOfType } from "@/app/api/admin/posts/[id]/route";
+
 
 
 export default function PostEdit() {
 
+  const { token } = useSupabaseSession()
   const router = useRouter();
 
   const [post, setPost] = useState<AdminPost>();
@@ -16,11 +20,15 @@ export default function PostEdit() {
 
   const { id } = useParams<string>();
 
-  try {
-
-    useEffect(() => {
+  useEffect(() => {
+    if (!token) return
+    try {
       const fetcher = async () => {
         const res: Response = await fetch(`/api/admin/posts/${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,
+          },
         })
         const { post }: PostResponse = await res.json()
         setPost(post)
@@ -29,32 +37,37 @@ export default function PostEdit() {
       }
 
       fetcher()
-    }, [id])
 
-  } catch (error) {
-    console.log(error)
-    alert('投稿の取得に失敗しました。')
-  }
+    } catch (error) {
+      console.log(error)
+      alert('投稿の取得に失敗しました。')
+    }
+  }, [id, token])
+
 
 
   const PostUpdate = async (data: Data) => {
-
+    if (!token) return
     try {
 
       const body: UpdateOfType = {
         title: data.title,
         content: data.content,
-        thumbnailURL: data.thumbnailUrl,
+        thumbnailImageKey: data.thumbnailImageKey,
         categories: data.categories.map(Number)
       }
 
       const res: Response = await fetch(`/api/admin/posts/${id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
         body: JSON.stringify(body)
       })
+
+      console.log(data)
+      console.log(body)
 
       alert('記事を更新しました。')
 
@@ -65,11 +78,13 @@ export default function PostEdit() {
   }
 
   const PostDelete = async () => {
+    if (!token) return
     try {
       const res: Response = await fetch(`/api/admin/posts/${id}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
       })
 
@@ -91,12 +106,13 @@ export default function PostEdit() {
         values={post ? {
           title: post.title,
           content: post.content,
-          thumbnailUrl: post.thumbnailURL,
-          categories: post.postCategories.map(c => String(c.categoryId))
+          thumbnailImageKey: post.thumbnailImageKey,
+          categories: post.postCategories.map(c => String(c.CategoryId))
         } : undefined}
         onSubmit={PostUpdate}
         onDelete={PostDelete}
       />
+      <>{console.log(post?.thumbnailImageKey)}</>
     </div>
   );
 };

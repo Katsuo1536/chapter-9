@@ -17,8 +17,8 @@ export default function Article() {
   const [post, setPost] = useState<AdminPost | null>(null);
   const [load, setLoad] = useState<boolean>(true);
 
-  try {
-    useEffect(() => {
+  useEffect(() => {
+    try {
       const fetcher = async () => {
         setLoad(true)
         const res = await fetch(
@@ -31,12 +31,11 @@ export default function Article() {
       }
 
       fetcher()
-    }, [id])
-  }
-  catch (error) {
-    console.log(error)
-    alert('投稿の取得に失敗しました。')
-  }
+    } catch (error) {
+      console.log(error)
+      alert('投稿の取得に失敗しました。')
+    }
+  }, [id])
 
 
   if (load) {

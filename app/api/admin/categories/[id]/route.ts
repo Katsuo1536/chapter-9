@@ -1,5 +1,6 @@
 import { prisma } from "@/app/_libs/prisma";
 import { NextResponse, NextRequest } from "next/server";
+import { supabase } from "@/app/_libs/supabase";
 
 export type CategoryShowResponse = {
   category: {
@@ -17,6 +18,14 @@ export type CategoryRequest = {
 export const GET = async (_request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
+
+  const token = _request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
   const { id } = await params;
 
   try {
@@ -51,6 +60,14 @@ export const GET = async (_request: NextRequest,
 export const PUT = async (_request: NextRequest,
   { params }: { params: Promise<{ id: string }> }) => {
 
+  const token = _request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
+
+
   const { id } = await params;
   const req: CategoryRequest = await _request.json();
 
@@ -72,6 +89,13 @@ export const PUT = async (_request: NextRequest,
 
 export const DELETE = async (_request: NextRequest,
   { params }: { params: Promise<{ id: string }> }) => {
+
+  const token = _request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if (error)
+    return NextResponse.json({ status: error.message }, { status: 400 })
 
   const { id } = await params;
 
