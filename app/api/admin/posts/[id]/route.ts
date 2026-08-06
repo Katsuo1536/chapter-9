@@ -36,7 +36,7 @@ export const GET = async (_request: NextRequest,
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
   const { id } = await params;
 
@@ -81,7 +81,7 @@ export const PUT = async (request: NextRequest,
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
   const { id } = await params;
   const req: UpdateOfType = await request.json();
@@ -126,7 +126,7 @@ export const DELETE = async (_request: NextRequest,
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
 
   const { id } = await params;

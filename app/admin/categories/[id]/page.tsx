@@ -22,8 +22,9 @@ export default function CategoryEdit() {
 
   useEffect(() => {
     if (!token) return
-    try {
-      const fetcher = async () => {
+
+    const fetcher = async () => {
+      try {
         const res = await fetch(`/api/admin/categories/${id}`, {
           headers: {
             'Content-Type': 'application/json',
@@ -34,15 +35,17 @@ export default function CategoryEdit() {
         setCategory(category)
         console.log(category)
         setLoad(!load)
+
+
       }
-
-      fetcher()
-
+      catch (error) {
+        console.log(error)
+        alert('カテゴリーの取得に失敗しました。')
+      }
     }
-    catch (error) {
-      console.log(error)
-      alert('カテゴリーの取得に失敗しました。')
-    }
+
+    fetcher()
+
   }, [id, token])
 
 

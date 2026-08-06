@@ -47,7 +47,7 @@ export const PostForm = ({
 
   const handleImageChange = async (
     event: ChangeEvent<HTMLInputElement>,
-  ): Promise<void> => {
+  ) => {
     if (!event.target.files || event.target.files.length == 0) {
       return
     }
@@ -55,8 +55,6 @@ export const PostForm = ({
     const file = event.target.files[0]
 
     const filePath = `private/${uuidv4()}`
-
-    console.log(filePath)
 
     const { data, error } = await supabase.storage
       .from('post_thumbnail')
@@ -72,9 +70,6 @@ export const PostForm = ({
 
     setThumbnailImageKey(data.path)
 
-
-
-    console.log(thumbnailUrl)
   }
 
   const [thumbnailUrl, setThumbnailUrl] = useState<null | string>(null)
@@ -104,8 +99,9 @@ export const PostForm = ({
   useEffect(() => {
     if (!token) return
 
-    try {
-      const fetcher = async () => {
+
+    const fetcher = async () => {
+      try {
         const res: Response = await fetch('/api/admin/categories', {
           headers: {
             'Content-Type': 'application/json',
@@ -116,14 +112,15 @@ export const PostForm = ({
         setCategories(categories)
         console.log(categories)
         setLoad(!load)
+
+      } catch (error) {
+        console.log(error)
+        alert('カテゴリーの取得に失敗しました。')
       }
-
-      fetcher()
-
-    } catch (error) {
-      console.log(error)
-      alert('カテゴリーの取得に失敗しました。')
     }
+
+    fetcher()
+
   }, [token])
 
 
@@ -195,7 +192,6 @@ export const PostForm = ({
           })}
 
           disabled={isSubmitting} />
-        <> {console.log(thumbnailImageKey)}</>
         {thumbnailUrl && (
           <div className="mt-2">
             <Image

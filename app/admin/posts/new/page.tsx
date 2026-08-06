@@ -19,8 +19,9 @@ export default function NewPost() {
 
   useEffect(() => {
     if (!token) return
-    try {
-      const fetcher = async () => {
+
+    const fetcher = async () => {
+      try {
         const res = await fetch('/api/admin/categories', {
           headers: {
             'Content-Type': 'application/json',
@@ -31,13 +32,13 @@ export default function NewPost() {
         setCategories(categories)
         console.log(categories)
         setLoad(!load)
+      } catch (error) {
+        console.log(error)
+        alert('カテゴリーの取得に失敗しました。')
       }
-
-      fetcher()
-    } catch (error) {
-      console.log(error)
-      alert('カテゴリーの取得に失敗しました。')
     }
+
+    fetcher()
   }, [token])
 
 

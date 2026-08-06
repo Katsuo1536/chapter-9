@@ -34,7 +34,7 @@ export const GET = async (request: NextRequest) => {
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
   try {
     const posts = await prisma.post.findMany({
@@ -70,12 +70,11 @@ export const POST = async (request: NextRequest) => {
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
 
 
   const req: PostOfType = await request.json();
-  console.log(req)
   try {
     const posts = await prisma.post.create({
       data: {

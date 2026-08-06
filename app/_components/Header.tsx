@@ -11,7 +11,7 @@ export const Header: React.FC = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    await router.replace('/')
+   router.replace('/')
   }
 
   const { session, isLoading } = useSupabaseSession()

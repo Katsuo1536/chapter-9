@@ -21,8 +21,9 @@ export default function ShowCategories() {
 
   useEffect(() => {
     if (!token) return
-    try {
-      const fetcher = async () => {
+
+    const fetcher = async () => {
+      try {
         const res: Response = await fetch('/api/admin/categories', {
           headers: {
             'Content-Type': 'application/json',
@@ -33,14 +34,15 @@ export default function ShowCategories() {
         setCategories(categories)
         console.log(categories)
         setLoad(!load)
-      }
 
-      fetcher()
+      }
+      catch (error) {
+        console.log(error)
+        alert('カテゴリーの取得に失敗しました。')
+      }
     }
-    catch (error) {
-      console.log(error)
-      alert('カテゴリーの取得に失敗しました。')
-    }
+
+    fetcher()
   }, [token])
 
 

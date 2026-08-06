@@ -13,25 +13,28 @@ export default function Home() {
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [load, setLoad] = useState<boolean>(true);
 
-  try {
-    useEffect(() => {
-      const fetcher = async () => {
+
+  useEffect(() => {
+    const fetcher = async () => {
+      try {
         const res = await fetch('/api/posts', {
         })
         const { posts }: PostsIndexResponse = await res.json()
         console.log(posts)
         setPosts(posts)
         setLoad(!load)
+
+
       }
+      catch (error) {
+        console.log(error)
+        alert('カテゴリーの取得に失敗しました。')
+      }
+    }
 
-      fetcher()
-    }, [])
+    fetcher()
+  }, [])
 
-  }
-  catch (error) {
-    console.log(error)
-    alert('カテゴリーの取得に失敗しました。')
-  }
 
   if (load) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
@@ -60,7 +63,6 @@ export default function Home() {
 
                 <div className="text-left items-center">
                   <time dateTime={elem.createdAt}>{time(new Date(elem.createdAt))}</time>
-                  <>{console.log(elem.postCategories)}</>
                   <span>{elem.postCategories.map(category => (
                     <span className="border border-blue-400 text-blue-400 rounded-2xl p-1" key={elem.id}>{category.category.name}</span>
                   ))}

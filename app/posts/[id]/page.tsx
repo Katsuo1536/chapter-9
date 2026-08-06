@@ -18,8 +18,9 @@ export default function Article() {
   const [load, setLoad] = useState<boolean>(true);
 
   useEffect(() => {
-    try {
-      const fetcher = async () => {
+
+    const fetcher = async () => {
+      try {
         setLoad(true)
         const res = await fetch(
           `/api/posts/${id}`, {
@@ -28,13 +29,14 @@ export default function Article() {
         setPost(post)
         console.log(post)
         setLoad(false)
-      }
 
-      fetcher()
-    } catch (error) {
-      console.log(error)
-      alert('投稿の取得に失敗しました。')
+      } catch (error) {
+        console.log(error)
+        alert('投稿の取得に失敗しました。')
+      }
     }
+
+    fetcher()
   }, [id])
 
 

@@ -22,8 +22,9 @@ export default function PostEdit() {
 
   useEffect(() => {
     if (!token) return
-    try {
-      const fetcher = async () => {
+
+    const fetcher = async () => {
+      try {
         const res: Response = await fetch(`/api/admin/posts/${id}`, {
           headers: {
             'Content-Type': 'application/json',
@@ -34,14 +35,15 @@ export default function PostEdit() {
         setPost(post)
         console.log(post)
         setLoad(!load)
+
+      } catch (error) {
+        console.log(error)
+        alert('投稿の取得に失敗しました。')
       }
-
-      fetcher()
-
-    } catch (error) {
-      console.log(error)
-      alert('投稿の取得に失敗しました。')
     }
+
+    fetcher()
+
   }, [id, token])
 
 
@@ -66,8 +68,6 @@ export default function PostEdit() {
         body: JSON.stringify(body)
       })
 
-      console.log(data)
-      console.log(body)
 
       alert('記事を更新しました。')
 
@@ -112,7 +112,6 @@ export default function PostEdit() {
         onSubmit={PostUpdate}
         onDelete={PostDelete}
       />
-      <>{console.log(post?.thumbnailImageKey)}</>
     </div>
   );
 };

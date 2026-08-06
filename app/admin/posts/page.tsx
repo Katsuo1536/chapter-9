@@ -20,8 +20,9 @@ export default function ShowPost() {
 
   useEffect(() => {
     if (!token) return
-    try {
-      const fetcher = async () => {
+
+    const fetcher = async () => {
+      try {
         const res = await fetch('/api/admin/posts', {
           headers: {
             'Content-Type': 'application/json',
@@ -32,13 +33,14 @@ export default function ShowPost() {
         setPosts(posts)
         console.log(posts)
         setLoad(!load)
-      }
 
-      fetcher()
-    } catch (error) {
-      console.log(error)
-      alert('投稿の取得に失敗しました。')
+      } catch (error) {
+        console.log(error)
+        alert('投稿の取得に失敗しました。')
+      }
     }
+
+    fetcher()
 
   }, [token])
 

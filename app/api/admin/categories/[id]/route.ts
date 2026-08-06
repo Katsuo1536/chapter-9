@@ -24,7 +24,7 @@ export const GET = async (_request: NextRequest,
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
   const { id } = await params;
 
@@ -53,7 +53,7 @@ export const GET = async (_request: NextRequest,
     return NextResponse.json<CategoryShowResponse>({ category }, { status: 200 })
   } catch (error) {
     if (error instanceof Error)
-      return NextResponse.json({ message: error.message }, { status: 400 })
+      return NextResponse.json({ message: error.message }, { status: 401 })
   }
 }
 
@@ -65,7 +65,7 @@ export const PUT = async (_request: NextRequest,
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
 
   const { id } = await params;
@@ -95,7 +95,7 @@ export const DELETE = async (_request: NextRequest,
   const { error } = await supabase.auth.getUser(token)
 
   if (error)
-    return NextResponse.json({ status: error.message }, { status: 400 })
+    return NextResponse.json({ status: error.message }, { status: 401 })
 
   const { id } = await params;
 

@@ -2,22 +2,29 @@
 
 import { supabase } from '@/app/_libs/supabase'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+
+export type Data = {
+  email: string,
+  password: string
+}
+
+const defaultValues: Data = {
+  email: '',
+  password: ''
+};
+
 
 export default function Page() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+
   const router = useRouter()
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const onSubmit = async (data: Data) => {
 
-    setIsLoading(true)
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+      email: data.email,
+      password: data.password,
     })
 
     if (error) {
@@ -25,12 +32,20 @@ export default function Page() {
     } else {
       router.replace('/admin/posts')
     }
-    setIsLoading(false)
   }
+
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isLoading }
+  } = useForm<Data>({
+    defaultValues
+  });
 
   return (
     <div className="flex justify-center pt-60">
-      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-100">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full max-w-100">
         <div>
           <label
             htmlFor="email"
@@ -40,12 +55,11 @@ export default function Page() {
           </label>
           <input
             type="email"
-            name="email"
             id="email"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             placeholder="name@company.com"
             required
-            onChange={(e) => setEmail(e.target.value)}
+            {...register('email')}
             disabled={isLoading}
           />
         </div>
@@ -58,12 +72,11 @@ export default function Page() {
           </label>
           <input
             type="password"
-            name="password"
             id="password"
             placeholder="••••••••"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             required
-            onChange={(e) => setPassword(e.target.value)}
+            {...register('password')}
             disabled={isLoading}
           />
         </div>
