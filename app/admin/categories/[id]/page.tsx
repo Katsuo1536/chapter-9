@@ -1,11 +1,11 @@
 "use client";
-import { Fragment, useState, useEffect } from "react";
 import { Sideber } from "@/app/_components/Sideber";
 import { AdminCategory } from "@/app/_types/AdminCategory";
 import { useParams, useRouter } from 'next/navigation';
 import { CategoryRequest, CategoryShowResponse } from "@/app/api/admin/categories/[id]/route";
 import { CategoryForm, Data } from "../_components/CategoryForm";
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+import { useFetch } from "@/app/_hooks/useFetch";
 
 
 
@@ -14,40 +14,20 @@ export default function CategoryEdit() {
   const { token } = useSupabaseSession()
   const router = useRouter();
 
-  const [category, setCategory] = useState<AdminCategory>();
-  const [load, setLoad] = useState<boolean>(true);
-
   const { id } = useParams<string>();
 
 
-  useEffect(() => {
-    if (!token) return
+  const { data, isLoading, error } = useFetch(`/api/admin/categories/${id}`)
 
-    const fetcher = async () => {
-      try {
-        const res = await fetch(`/api/admin/categories/${id}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token,
-          },
-        })
-        const { category }: CategoryShowResponse = await res.json()
-        setCategory(category)
-        console.log(category)
-        setLoad(!load)
+  const category: AdminCategory = data ? data.category : '';
 
-
-      }
-      catch (error) {
-        console.log(error)
-        alert('カテゴリーの取得に失敗しました。')
-      }
-    }
-
-    fetcher()
-
-  }, [id, token])
-
+  if (isLoading) {
+    return <div className="mx-auto text-center mt-5">カテゴリー読み込み中！！！</div>
+  }
+  else if (error) {
+    return
+    <div className="mx-auto text-center mt-5">カテゴリーを取得できませんでした</div>
+  };
 
 
   const CategoryUpdate = async (data: Data) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { Fragment } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "../../_utils/time";
@@ -8,46 +8,20 @@ import type { AdminPost } from "@/app/_types/AdminPost";
 import { Sideber } from "@/app/_components/Sideber";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+import { useFetch } from "@/app/_hooks/useFetch";
 
 
 
 export default function ShowPost() {
-  const { token } = useSupabaseSession()
 
-  const [posts, setPosts] = useState<AdminPost[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
+  const { data, isLoading } = useFetch('/api/admin/posts');
 
-
-  useEffect(() => {
-    if (!token) return
-
-    const fetcher = async () => {
-      try {
-        const res = await fetch('/api/admin/posts', {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token,
-          },
-        })
-        const { posts }: CategoriesIndexResponse = await res.json()
-        setPosts(posts)
-        console.log(posts)
-        setLoad(!load)
-
-      } catch (error) {
-        console.log(error)
-        alert('投稿の取得に失敗しました。')
-      }
-    }
-
-    fetcher()
-
-  }, [token])
+  const posts: AdminPost[] = data ? data.posts : [];
 
 
-  if (load) {
+  if (isLoading) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
-  } else if (posts.length === 0) {
+  } else if (data?.length == 0) {
     return
     <div className="mx-auto text-center mt-5">記事が見つかりません</div>
   };

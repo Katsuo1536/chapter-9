@@ -1,10 +1,7 @@
 "use client";
-import { Fragment, useState, useEffect, use } from "react";
 import { Sideber } from "@/app/_components/Sideber";
-import type { AdminCategory } from "@/app/_types/AdminCategory";
 import { useRouter } from 'next/navigation';
 import { PostOfType } from "@/app/api/admin/posts/route";
-import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
 import { PostForm, Data } from "../_components/PostForm";
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
 
@@ -13,34 +10,6 @@ export default function NewPost() {
 
   const { token } = useSupabaseSession()
   const router = useRouter();
-
-  const [categories, setCategories] = useState<AdminCategory[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (!token) return
-
-    const fetcher = async () => {
-      try {
-        const res = await fetch('/api/admin/categories', {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token,
-          },
-        })
-        const { categories }: CategoriesIndexResponse = await res.json()
-        setCategories(categories)
-        console.log(categories)
-        setLoad(!load)
-      } catch (error) {
-        console.log(error)
-        alert('カテゴリーの取得に失敗しました。')
-      }
-    }
-
-    fetcher()
-  }, [token])
-
 
   const MakePost = async (data: Data) => {
     if (!token) return

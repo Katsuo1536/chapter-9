@@ -85,6 +85,7 @@ export const POST = async (request: NextRequest) => {
 
     })
 
+    
     for (const category of req.categories) {
       await prisma.postCategory.create({
         data: {

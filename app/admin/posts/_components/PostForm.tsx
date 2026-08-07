@@ -6,6 +6,7 @@ import { supabase } from '@/app/_libs/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import Image from 'next/image';
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+import { useFetch } from "@/app/_hooks/useFetch";
 
 
 export type Data = {
@@ -40,8 +41,6 @@ export const PostForm = ({
 
   const { token } = useSupabaseSession()
 
-  const [categories, setCategories] = useState<AdminCategory[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
 
   const [thumbnailImageKey, setThumbnailImageKey] = useState<string>('');
 
@@ -55,6 +54,7 @@ export const PostForm = ({
     const file = event.target.files[0]
 
     const filePath = `private/${uuidv4()}`
+
 
     const { data, error } = await supabase.storage
       .from('post_thumbnail')
@@ -96,32 +96,9 @@ export const PostForm = ({
   }, [thumbnailImageKey])
 
 
-  useEffect(() => {
-    if (!token) return
+  const { data } = useFetch('/api/admin/categories')
 
-
-    const fetcher = async () => {
-      try {
-        const res: Response = await fetch('/api/admin/categories', {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token,
-          },
-        })
-        const { categories }: CategoriesIndexResponse = await res.json()
-        setCategories(categories)
-        console.log(categories)
-        setLoad(!load)
-
-      } catch (error) {
-        console.log(error)
-        alert('カテゴリーの取得に失敗しました。')
-      }
-    }
-
-    fetcher()
-
-  }, [token])
+  const categories: AdminCategory[] = data ? data.categories : [];
 
 
 
@@ -186,9 +163,9 @@ export const PostForm = ({
         <input type='file' id='thumbnailImageKey' className="border border-b-gray-700 rounded-2xl p-4 w-full"
           accept="image/*"
           {...register('thumbnailImageKey', {
+            validate: (v) => v !== '' || 'サムネイルは必須です。',
             onChange: handleImageChange,
-            onBlur: setValue('thumbnailImageKey', thumbnailImageKey)
-
+            onBlur: setValue('thumbnailImageKey', thumbnailImageKey),
           })}
 
           disabled={isSubmitting} />
@@ -220,11 +197,12 @@ export const PostForm = ({
                 className="border border-b-gray-700 rounded-2xl p-4 sr-only"
                 type="checkbox"
                 value={elem.id}
-                {...register('categories')}
+                {...register('categories', {
+                  validate: (c) => c.length > 0 || 'カテゴリーは必須です。',
+                })}
                 disabled={isSubmitting} />
               {elem.name}
             </label>
-
           </Fragment>
         ))
       }

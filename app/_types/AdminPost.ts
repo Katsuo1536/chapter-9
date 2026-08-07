@@ -9,6 +9,6 @@ export interface AdminPost {
     category: {
       id: string
       name: string
-    }[]
-  }
+    }
+  }[]
 }

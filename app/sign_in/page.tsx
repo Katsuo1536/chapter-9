@@ -38,7 +38,7 @@ export default function Page() {
   const {
     register,
     handleSubmit,
-    formState: { isLoading }
+    formState: { isLoading, errors }
   } = useForm<Data>({
     defaultValues
   });
@@ -58,10 +58,14 @@ export default function Page() {
             id="email"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             placeholder="name@company.com"
-            required
-            {...register('email')}
+            {...register('email', {
+              required: 'メールアドレスは必須です。',
+            })}
             disabled={isLoading}
           />
+
+          <div className="justify-center mx-auto container items-center text-red-500">{errors.email?.message}</div>
+
         </div>
         <div>
           <label
@@ -76,9 +80,14 @@ export default function Page() {
             placeholder="••••••••"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             required
-            {...register('password')}
+            {...register('password', {
+              required: 'パスワードは必須です。',
+            })}
             disabled={isLoading}
           />
+
+          <div className="justify-center mx-auto container items-center text-red-500">{errors.password?.message}</div>
+
         </div>
 
         <div>

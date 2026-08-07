@@ -1,12 +1,11 @@
 "use client";
-import { Fragment, useState, useEffect } from "react";
 import { Sideber } from "@/app/_components/Sideber";
 import type { AdminPost } from "@/app/_types/AdminPost";
 import { useParams, useRouter } from 'next/navigation';
-import { PostResponse } from "@/app/api/posts/[id]/route";
 import { PostForm, Data } from "../_components/PostForm";
 import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
 import { UpdateOfType } from "@/app/api/admin/posts/[id]/route";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 
 
@@ -15,36 +14,19 @@ export default function PostEdit() {
   const { token } = useSupabaseSession()
   const router = useRouter();
 
-  const [post, setPost] = useState<AdminPost>();
-  const [load, setLoad] = useState<boolean>(true);
-
   const { id } = useParams<string>();
 
-  useEffect(() => {
-    if (!token) return
+  const { data, isLoading, error } = useFetch(`/api/admin/posts/${id}`)
 
-    const fetcher = async () => {
-      try {
-        const res: Response = await fetch(`/api/admin/posts/${id}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token,
-          },
-        })
-        const { post }: PostResponse = await res.json()
-        setPost(post)
-        console.log(post)
-        setLoad(!load)
+  if (isLoading) {
+    return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
+  }
+  else if (error) {
+    return
+    <div className="mx-auto text-center mt-5">記事を取得できませんでした</div>
+  };
 
-      } catch (error) {
-        console.log(error)
-        alert('投稿の取得に失敗しました。')
-      }
-    }
-
-    fetcher()
-
-  }, [id, token])
+  const post: AdminPost = data ? data.post : '';
 
 
 
@@ -107,7 +89,7 @@ export default function PostEdit() {
           title: post.title,
           content: post.content,
           thumbnailImageKey: post.thumbnailImageKey,
-          categories: post.postCategories.map(c => String(c.CategoryId))
+          categories: post.postCategories.map(c => String(c.category.id))
         } : undefined}
         onSubmit={PostUpdate}
         onDelete={PostDelete}

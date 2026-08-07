@@ -50,10 +50,10 @@ export const GET = async (_request: NextRequest,
       return NextResponse.json({ message: "カテゴリーが見つかりません" }, { status: 404 })
     }
 
-    return NextResponse.json<CategoryShowResponse>({ category }, { status: 200 })
+    return NextResponse.json({ category }, { status: 200 })
   } catch (error) {
     if (error instanceof Error)
-      return NextResponse.json({ message: error.message }, { status: 401 })
+      return NextResponse.json({ message: error.message }, { status: 400 })
   }
 }
 
