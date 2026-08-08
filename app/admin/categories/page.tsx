@@ -1,46 +1,26 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { Fragment } from "react";
 import Link from 'next/link';
-import Image from 'next/image';
-import { time } from "../../_utils/time";
-import type { AdminPost } from "@/app/_types/AdminPost";
 import { Sideber } from "@/app/_components/Sideber";
-import { AdminCategory } from "@/app/_types/AdminCategory";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
+import { useFetch } from "@/app/_hooks/useFetch";
+import type { AdminCategory } from "@/app/_types/AdminCategory";
+import CategoryEdit from "./[id]/page";
 
 
 export default function ShowCategories() {
 
-  const [categories, setCategories] = useState<AdminCategory[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
+  const { data, isLoading } = useFetch('/api/admin/categories')
 
+  const categories : AdminCategory[] = data ? data.categories : [];
 
-  try {
-    useEffect(() => {
-      const fetcher = async () => {
-        const res: Response = await fetch('/api/admin/categories', {
-        })
-        const { categories }: CategoriesIndexResponse = await res.json()
-        setCategories(categories)
-        console.log(categories)
-        setLoad(!load)
-      }
-
-      fetcher()
-    }, [])
-    
+  if (isLoading) {
+    return <div className="mx-auto text-center mt-5">カテゴリー読み込み中！！！</div>
   }
-  catch (error) {
-    console.log(error)
-    alert('カテゴリーの取得に失敗しました。')
-  }
-
-  if (load) {
-    return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
-  } else if (categories.length === 0) {
+  else if (categories.length === 0) {
     return
-    <div className="mx-auto text-center mt-5">記事が見つかりません</div>
+    <div className="mx-auto text-center mt-5">カテゴリーが見つかりません</div>
   };
 
   return (

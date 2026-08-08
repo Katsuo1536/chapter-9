@@ -1,47 +1,32 @@
 "use client";
-import { Fragment, useState, useEffect, use } from "react";
 import { Sideber } from "@/app/_components/Sideber";
-import type { AdminCategory } from "@/app/_types/AdminCategory";
 import { useRouter } from 'next/navigation';
-import { PostOfType } from "@/app/api/posts/route";
-import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
+import { PostOfType } from "@/app/api/admin/posts/route";
 import { PostForm, Data } from "../_components/PostForm";
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+
 
 export default function NewPost() {
 
+  const { token } = useSupabaseSession()
   const router = useRouter();
 
-  const [categories, setCategories] = useState<AdminCategory[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetcher = async () => {
-      const res = await fetch('/api/admin/categories', {
-      })
-      const { categories }: CategoriesIndexResponse = await res.json()
-      setCategories(categories)
-      console.log(categories)
-      setLoad(!load)
-    }
-
-    fetcher()
-  }, [])
-
-
   const MakePost = async (data: Data) => {
+    if (!token) return
     try {
 
       const body: PostOfType = {
         title: data.title,
         content: data.content,
-        thumbnailUrl: data.thumbnailUrl,
+        thumbnailImageKey: data.thumbnailImageKey,
         categories: data.categories.map(Number),
       }
 
       const res: Response = await fetch('/api/admin/posts', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
         body: JSON.stringify(body)
       })

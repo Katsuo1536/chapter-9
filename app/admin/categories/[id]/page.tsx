@@ -1,47 +1,37 @@
 "use client";
-import { Fragment, useState, useEffect } from "react";
 import { Sideber } from "@/app/_components/Sideber";
 import { AdminCategory } from "@/app/_types/AdminCategory";
 import { useParams, useRouter } from 'next/navigation';
 import { CategoryRequest, CategoryShowResponse } from "@/app/api/admin/categories/[id]/route";
 import { CategoryForm, Data } from "../_components/CategoryForm";
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+import { useFetch } from "@/app/_hooks/useFetch";
 
 
 
 export default function CategoryEdit() {
 
+  const { token } = useSupabaseSession()
   const router = useRouter();
-
-  const [category, setCategory] = useState<AdminCategory>();
-  const [load, setLoad] = useState<boolean>(true);
 
   const { id } = useParams<string>();
 
 
-  try {
-    useEffect(() => {
-      const fetcher = async () => {
-        const res = await fetch(`/api/admin/categories/${id}`, {
-        })
-        const { category }: CategoryShowResponse = await res.json()
-        setCategory(category)
-        console.log(category)
-        setLoad(!load)
-      }
+  const { data, isLoading, error } = useFetch(`/api/admin/categories/${id}`)
 
-      fetcher()
+  const category: AdminCategory = data ? data.category : '';
 
-    }, [id])
-
-
+  if (isLoading) {
+    return <div className="mx-auto text-center mt-5">カテゴリー読み込み中！！！</div>
   }
-  catch (error) {
-    console.log(error)
-    alert('カテゴリーの取得に失敗しました。')
-  }
+  else if (error) {
+    return
+    <div className="mx-auto text-center mt-5">カテゴリーを取得できませんでした</div>
+  };
 
 
   const CategoryUpdate = async (data: Data) => {
+    if (!token) return
     try {
 
       const body: CategoryRequest = {
@@ -51,7 +41,8 @@ export default function CategoryEdit() {
       const res: Response = await fetch(`/api/admin/categories/${id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
         body: JSON.stringify(body)
       })
@@ -64,11 +55,13 @@ export default function CategoryEdit() {
   }
 
   const CategoryDelete = async () => {
+    if (!token) return
     try {
       const res: Response = await fetch(`/api/admin/categories/${id}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
       })
 

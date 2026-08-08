@@ -1,47 +1,27 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { Fragment } from "react";
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "../../_utils/time";
 import { AdminPost } from "@/app/_types/AdminPost";
 import { PostResponse } from "@/app/api/posts/[id]/route";
+import { useFetch } from "@/app/_hooks/useFetch";
 
 
 export default function Article() {
 
   const { id } = useParams<string>();
 
-  // const [post, setPost] = useState<Post | null>(null);
-  const [post, setPost] = useState<AdminPost | null>(null);
-  const [load, setLoad] = useState<boolean>(true);
+  const { data , isLoading ,error} = useFetch(`/api/posts/${id}`)
 
-  try {
-    useEffect(() => {
-      const fetcher = async () => {
-        setLoad(true)
-        const res = await fetch(
-          `/api/posts/${id}`, {
-        })
-        const { post }: PostResponse = await res.json()
-        setPost(post)
-        console.log(post)
-        setLoad(false)
-      }
-
-      fetcher()
-    }, [id])
-  }
-  catch (error) {
-    console.log(error)
-    alert('投稿の取得に失敗しました。')
-  }
+  const post: AdminPost = data ? data.post : '';
 
 
-  if (load) {
+  if (isLoading) {
     return <div className="mx-auto text-center mt-5">投稿読み込み中！！！</div>
-  } else if (!post) {
+  } else if (error) {
     return <div>
       <div className="mx-auto text-center mt-5">投稿が見つかりません</div>
       <Link href="/" className="mx-auto text-blue-400 text-0xl" >記事一覧へ戻る</Link>
@@ -69,7 +49,7 @@ export default function Article() {
 
 
 
-                <span>{post.postCategories.map(c => (
+                <span>{post.postCategories?.map(c => (
                   <span className="border border-blue-400 text-blue-400 rounded-2xl p-1 m-1" key='c.id'>{c.category.name}</span>
                 ))}
                 </span>

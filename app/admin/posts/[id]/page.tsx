@@ -1,60 +1,55 @@
 "use client";
-import { Fragment, useState, useEffect } from "react";
 import { Sideber } from "@/app/_components/Sideber";
 import type { AdminPost } from "@/app/_types/AdminPost";
 import { useParams, useRouter } from 'next/navigation';
-import { PostResponse, UpdateOfType } from "@/app/api/posts/[id]/route";
 import { PostForm, Data } from "../_components/PostForm";
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+import { UpdateOfType } from "@/app/api/admin/posts/[id]/route";
+import { useFetch } from "@/app/_hooks/useFetch";
+
 
 
 export default function PostEdit() {
 
+  const { token } = useSupabaseSession()
   const router = useRouter();
-
-  const [post, setPost] = useState<AdminPost>();
-  const [load, setLoad] = useState<boolean>(true);
 
   const { id } = useParams<string>();
 
-  try {
+  const { data, isLoading, error } = useFetch(`/api/admin/posts/${id}`)
 
-    useEffect(() => {
-      const fetcher = async () => {
-        const res: Response = await fetch(`/api/admin/posts/${id}`, {
-        })
-        const { post }: PostResponse = await res.json()
-        setPost(post)
-        console.log(post)
-        setLoad(!load)
-      }
-
-      fetcher()
-    }, [id])
-
-  } catch (error) {
-    console.log(error)
-    alert('投稿の取得に失敗しました。')
+  if (isLoading) {
+    return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
   }
+  else if (error) {
+    return
+    <div className="mx-auto text-center mt-5">記事を取得できませんでした</div>
+  };
+
+  const post: AdminPost = data ? data.post : '';
+
 
 
   const PostUpdate = async (data: Data) => {
-
+    if (!token) return
     try {
 
       const body: UpdateOfType = {
         title: data.title,
         content: data.content,
-        thumbnailURL: data.thumbnailUrl,
+        thumbnailImageKey: data.thumbnailImageKey,
         categories: data.categories.map(Number)
       }
 
       const res: Response = await fetch(`/api/admin/posts/${id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
         body: JSON.stringify(body)
       })
+
 
       alert('記事を更新しました。')
 
@@ -65,11 +60,13 @@ export default function PostEdit() {
   }
 
   const PostDelete = async () => {
+    if (!token) return
     try {
       const res: Response = await fetch(`/api/admin/posts/${id}`, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: token,
         },
       })
 
@@ -91,8 +88,8 @@ export default function PostEdit() {
         values={post ? {
           title: post.title,
           content: post.content,
-          thumbnailUrl: post.thumbnailURL,
-          categories: post.postCategories.map(c => String(c.categoryId))
+          thumbnailImageKey: post.thumbnailImageKey,
+          categories: post.postCategories.map(c => String(c.category.id))
         } : undefined}
         onSubmit={PostUpdate}
         onDelete={PostDelete}

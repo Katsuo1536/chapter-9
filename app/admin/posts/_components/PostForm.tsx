@@ -1,20 +1,25 @@
 import { useForm } from "react-hook-form";
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, ChangeEvent } from "react";
 import type { AdminCategory } from "@/app/_types/AdminCategory";
 import { CategoriesIndexResponse } from "@/app/api/admin/categories/route";
+import { supabase } from '@/app/_libs/supabase';
+import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
+import { useSupabaseSession } from '@/app/_hooks/useSupabaseSession';
+import { useFetch } from "@/app/_hooks/useFetch";
 
 
 export type Data = {
   title: string,
   content: string,
-  thumbnailUrl: string,
+  thumbnailImageKey: string,
   categories: number[]
 }
 
 const defaultValues: Data = {
   title: '',
   content: '',
-  thumbnailUrl: '',
+  thumbnailImageKey: '',
   categories: []
 };
 
@@ -34,36 +39,80 @@ export const PostForm = ({
 }: Props
 ) => {
 
-  const [categories, setCategories] = useState<AdminCategory[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
+  const { token } = useSupabaseSession()
 
+
+  const [thumbnailImageKey, setThumbnailImageKey] = useState<string>('');
+
+  const handleImageChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!event.target.files || event.target.files.length == 0) {
+      return
+    }
+
+    const file = event.target.files[0]
+
+    const filePath = `private/${uuidv4()}`
+
+
+    const { data, error } = await supabase.storage
+      .from('post_thumbnail')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (error) {
+      alert(error.message)
+      return
+    }
+
+    setThumbnailImageKey(data.path)
+
+  }
+
+  const [thumbnailUrl, setThumbnailUrl] = useState<null | string>(null)
   useEffect(() => {
+    if (!thumbnailImageKey) return
+
     try {
+      // アップロード時に取得した、thumbnailImageKeyを用いて画像のURLを取得
       const fetcher = async () => {
-        const res: Response = await fetch('/api/admin/categories', {
-        })
-        const { categories }: CategoriesIndexResponse = await res.json()
-        setCategories(categories)
-        console.log(categories)
-        setLoad(!load)
+        const {
+          data: { publicUrl },
+        } = await supabase.storage
+          .from('post_thumbnail')
+          .getPublicUrl(thumbnailImageKey)
+
+        setThumbnailUrl(publicUrl)
       }
 
       fetcher()
-
     } catch (error) {
       console.log(error)
-      alert('カテゴリーの取得に失敗しました。')
+      alert('URLの取得に失敗しました。')
     }
-  }, [])
+  }, [thumbnailImageKey])
+
+
+  const { data } = useFetch('/api/admin/categories')
+
+  const categories: AdminCategory[] = data ? data.categories : [];
+
+
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting }
   } = useForm<Data>({
     defaultValues,
     values,
   });
+
+
 
   return (
     <form className="flex-1 mx-auto mr-30"
@@ -108,23 +157,38 @@ export const PostForm = ({
 
 
       <div className="justify-center gap-20 mx-auto container items-center mt-5">
-        <label htmlFor="thumbnailUrl">サムネイルURL</label>
+        <label htmlFor="thumbnailImageKey">サムネイルURL</label>
       </div>
       <div className="justify-center gap-20 mx-auto container items-center mt-1">
-        <input className="border border-b-gray-700 rounded-2xl p-4 w-full"
-          {...register('thumbnailUrl', {
-            required: '内容は必須です。'
+        <input type='file' id='thumbnailImageKey' className="border border-b-gray-700 rounded-2xl p-4 w-full"
+          accept="image/*"
+          {...register('thumbnailImageKey', {
+            validate: (v) => v !== '' || 'サムネイルは必須です。',
+            onChange: handleImageChange,
+            onBlur: setValue('thumbnailImageKey', thumbnailImageKey),
           })}
+
           disabled={isSubmitting} />
+        {thumbnailUrl && (
+          <div className="mt-2">
+            <Image
+              src={thumbnailUrl}
+              alt="thumbnail"
+              width={400}
+              height={400}
+            />
+          </div>
+        )}
       </div>
-      <div className="justify-center mx-auto container items-center text-red-500">{errors.thumbnailUrl?.message}</div>
+      <div className="justify-center mx-auto container items-center text-red-500">{errors.thumbnailImageKey?.message}</div>
+
+
 
       <div className="justify-center gap-20 mx-auto container items-center mt-10 m-5">
         <label htmlFor="category">カテゴリー</label>
       </div>
-
       {
-        categories?.map(elem => (
+        categories.map(elem => (
           <Fragment key={elem.id}>
             <label className="px-4 py-2 rounded-2xl p-4 cursor-pointer border
                       bg-gray-100 text-black
@@ -133,11 +197,12 @@ export const PostForm = ({
                 className="border border-b-gray-700 rounded-2xl p-4 sr-only"
                 type="checkbox"
                 value={elem.id}
-                {...register('categories')}
+                {...register('categories', {
+                  validate: (c) => c.length > 0 || 'カテゴリーは必須です。',
+                })}
                 disabled={isSubmitting} />
               {elem.name}
             </label>
-
           </Fragment>
         ))
       }

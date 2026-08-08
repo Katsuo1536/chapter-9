@@ -1,39 +1,23 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { Fragment } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { time } from "./_utils/time";
 import { AdminPost } from "./_types/AdminPost";
 import { PostsIndexResponse } from "./api/posts/route";
+import { useFetch } from "./_hooks/useFetch";
 
 
 export default function Home() {
 
-  const [posts, setPosts] = useState<AdminPost[]>([]);
-  const [load, setLoad] = useState<boolean>(true);
 
-  try {
-    useEffect(() => {
-      const fetcher = async () => {
-        const res = await fetch('/api/posts', {
-        })
-        const { posts }: PostsIndexResponse = await res.json()
-        console.log(posts)
-        setPosts(posts)
-        setLoad(!load)
-      }
+  const { data, isLoading } = useFetch('/api/posts');
 
-      fetcher()
-    }, [])
+  const posts: AdminPost[] = data ? data.posts : [];
 
-  }
-  catch (error) {
-    console.log(error)
-    alert('カテゴリーの取得に失敗しました。')
-  }
 
-  if (load) {
+  if (isLoading) {
     return <div className="mx-auto text-center mt-5">記事読み込み中！！！</div>
   } else if (posts.length === 0) {
     return
@@ -60,7 +44,6 @@ export default function Home() {
 
                 <div className="text-left items-center">
                   <time dateTime={elem.createdAt}>{time(new Date(elem.createdAt))}</time>
-                  <>{console.log(elem.postCategories)}</>
                   <span>{elem.postCategories.map(category => (
                     <span className="border border-blue-400 text-blue-400 rounded-2xl p-1" key={elem.id}>{category.category.name}</span>
                   ))}
